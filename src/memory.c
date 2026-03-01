@@ -1,4 +1,4 @@
-#include "../include/memory.h"
+#include "memory.h"
 
 void free_frame(frame_t frame)
 {
