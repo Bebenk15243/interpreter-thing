@@ -5,7 +5,7 @@ enum tokens_ids { LPAR, RPAR, VAR, NUMBER, EOF_ };
 
 typedef struct {
     int token_id;
-    int *value;
+    void *value;
 } token;
 
 // bufferspace
