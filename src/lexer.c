@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#define MAX_AMOUNT_TOKENS 32
+#define MAX_AMOUNT_TOKENS 2048
 #define MAX_VARIABLE_LENGTH 16
 
 // this function checks wether the string between begin and end index could be a
@@ -44,10 +44,9 @@ void push_variable_token(char *buffer, token *token_array, int buffer_index,
             memcpy(value, buffer + begin_new_token,
                    buffer_index - begin_new_token);
 
-            token_array[token_index++] = (token){VAR, value};
+            token_array[token_index] = (token){VAR, value};
             // debug statement
             printf("found value: [%s]\n", value);
-            free(value);
         }
     }
 }
@@ -73,6 +72,7 @@ token *lexerer(char *buffer) {
         case ')':
             push_variable_token(buffer, token_array, buffer_index,
                                 begin_new_token, token_index);
+            token_index++;
 
             // check for parenthesis and log right token
             if (buffer[buffer_index] == ')') {
@@ -91,6 +91,7 @@ token *lexerer(char *buffer) {
         case ' ':
             push_variable_token(buffer, token_array, buffer_index,
                                 begin_new_token, token_index);
+            token_index++;
             begin_new_token = buffer_index + 1;
             break;
         }
