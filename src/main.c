@@ -48,6 +48,7 @@ int main(const int argc, const char **argv) {
                 input_buffer[idx] = ' ';
             idx = strlen(input_buffer);
         } while (old_idx != idx);
+        fclose(file);
 
         token *token_array = lexerer(input_buffer);
         print_tokens(token_array);

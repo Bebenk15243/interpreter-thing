@@ -47,6 +47,7 @@ void push_variable_token(char *buffer, token *token_array, int buffer_index,
             token_array[token_index++] = (token){VAR, value};
             // debug statement
             printf("found value: [%s]\n", value);
+            free(value);
         }
     }
 }
