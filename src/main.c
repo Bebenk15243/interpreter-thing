@@ -8,7 +8,6 @@ void args_handle(const int argc, const char **argv, char **file_name) {
     if (argc == 1) {
         return;
     }
-    printf("you got: %d args\n", argc - 1);
     for (int i = 0; i < argc; i++) {
         if (argv[i][0] == '-') {
             switch (argv[i][1]) {

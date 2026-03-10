@@ -22,6 +22,35 @@ int is_variable(char *buffer, int begin_index, int end_index) {
     return 1;
 }
 
+// push token variable that is before the buffer_index in buffer and starts on
+//  begin_new_token. This is pushed to the token_array which has a free space at
+//  token_index.
+void push_variable_token(char *buffer, token *token_array, int buffer_index,
+                         int begin_new_token, int token_index) {
+    // check if index is same, if so, no variable should be lexed.
+    if (buffer_index != begin_new_token) {
+        // check if variable between beginidx and index, not including
+        //  the index!!
+        if (is_variable(buffer, begin_new_token, buffer_index)) {
+            // if variable, allocate space for the value
+            char *value =
+                (char *)calloc(buffer_index - begin_new_token, sizeof(char));
+            if (value == NULL) {
+                printf("error, no memory\n");
+                exit(1);
+            }
+            // copy the value from the buffer into the tokenarray
+            //  dest, src, length
+            memcpy(value, buffer + begin_new_token,
+                   buffer_index - begin_new_token);
+
+            token_array[token_index++] = (token){VAR, value};
+            // debug statement
+            printf("found value: [%s]\n", value);
+        }
+    }
+}
+
 token *lexerer(char *buffer) {
     // allocation token list to give later back to parser
     token *token_array = (token *)calloc(MAX_AMOUNT_TOKENS, sizeof(token));
@@ -41,36 +70,16 @@ token *lexerer(char *buffer) {
         switch (buffer[buffer_index]) {
         case '(':
         case ')':
-            // if its parenthesis, check if index is same, if so, no variable
-            // should be lexed.
-            if (buffer_index != begin_new_token) {
-                // check if variable between beginidx and index, not including
-                //  the index!!
-                if (is_variable(buffer, begin_new_token, buffer_index)) {
-                    // if variable, allocate space for the value
-                    char *value = (char *)calloc(buffer_index - begin_new_token,
-                                                 sizeof(char));
-                    if (value == NULL) {
-                        printf("error, no memory\n");
-                        exit(1);
-                    }
-                    // copy the value from the buffer into the tokenarray
-                    memcpy(value, buffer + begin_new_token,
-                           buffer_index - begin_new_token);
-                    // value[buffer_index - begin_new_token] = '\0';
-                    token_array[token_index++] = (token){VAR, value};
-                    // debug statement
-                    printf("found value: [%s]\n", value);
-                }
-            }
+            push_variable_token(buffer, token_array, buffer_index,
+                                begin_new_token, token_index);
 
             // check for parenthesis and log right token
             if (buffer[buffer_index] == ')') {
                 token_array[token_index++] = (token){LPAR, NULL};
-                printf("founf token: [RPAR]\n");
+                printf("found token: [RPAR]\n");
             } else {
                 token_array[token_index++] = (token){RPAR, NULL};
-                printf("founf token: [LPAR]\n");
+                printf("found token: [LPAR]\n");
             }
             // update the begin token, all tokens including the bufferindex
             // are
@@ -79,26 +88,8 @@ token *lexerer(char *buffer) {
             break;
 
         case ' ':
-            if (buffer_index != begin_new_token) {
-                // check if variable between beginidx and index, not including
-                //  the index!!
-                if (is_variable(buffer, begin_new_token, buffer_index)) {
-                    // if variable, allocate space for the value
-                    char *value = (char *)calloc(buffer_index - begin_new_token,
-                                                 sizeof(char));
-                    if (value == NULL) {
-                        printf("error, no memory\n");
-                        exit(1);
-                    }
-                    // copy the value from the buffer into the tokenarray
-                    memcpy(value, buffer + begin_new_token,
-                           buffer_index - begin_new_token);
-                    // value[buffer_index - begin_new_token] = '\0';
-                    token_array[token_index++] = (token){VAR, value};
-                    // debug statement
-                    printf("found value: [%s]\n", value);
-                }
-            }
+            push_variable_token(buffer, token_array, buffer_index,
+                                begin_new_token, token_index);
             begin_new_token = buffer_index + 1;
             break;
         }
