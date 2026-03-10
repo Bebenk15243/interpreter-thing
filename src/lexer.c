@@ -67,10 +67,10 @@ token *lexerer(char *buffer) {
             // check for parenthesis and log right token
             if (buffer[buffer_index] == ')') {
                 token_array[token_index++] = (token){LPAR, NULL};
-                printf("founf token: [LPAR]\n");
+                printf("founf token: [RPAR]\n");
             } else {
                 token_array[token_index++] = (token){RPAR, NULL};
-                printf("founf token: [RPAR]\n");
+                printf("founf token: [LPAR]\n");
             }
             // update the begin token, all tokens including the bufferindex
             // are
