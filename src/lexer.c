@@ -22,11 +22,24 @@ int is_variable(char *buffer, int begin_index, int end_index) {
     return 1;
 }
 
+// determines the special forms of the language
+int determine_token_special_token(char *value) {
+    if (!strcmp(value, "lambda"))
+        return LAMBDA;
+    else if (!strcmp(value, "define"))
+        return DEFINE;
+    else if (!strcmp(value, "if"))
+        return IF;
+    else
+        return VAR;
+}
+
 // push token variable that is before the buffer_index in buffer and starts on
 //  begin_new_token. This is pushed to the token_array which has a free space at
 //  token_index.
-void push_variable_token(char *buffer, token *token_array, int buffer_index,
-                         int begin_new_token, int token_index) {
+//  returns 1 if the tokenarray has to be incremebted.
+int push_variable_token(char *buffer, token *token_array, int buffer_index,
+                        int begin_new_token, int token_index) {
     // check if index is same, if so, no variable should be lexed.
     if (buffer_index != begin_new_token) {
         // check if variable between beginidx and index, not including
@@ -43,12 +56,19 @@ void push_variable_token(char *buffer, token *token_array, int buffer_index,
             //  dest, src, length
             memcpy(value, buffer + begin_new_token,
                    buffer_index - begin_new_token);
-
-            token_array[token_index] = (token){VAR, value};
+            token_array[token_index] =
+                (token){determine_token_special_token(value), value};
             // debug statement
-            print_debug(value);
             print_debug("found value: ");
+            print_debug(value);
+
+            return 1;
+        } else {
+            print_warning("lexing: weird thing that shouldnt be reachable");
+            return 0;
         }
+    } else {
+        return 0;
     }
 }
 
@@ -68,20 +88,26 @@ token *lexerer(char *buffer) {
 
     // maybe implement a propper dfa
     while (buffer[buffer_index] != '\0') {
+
+        print_debug(buffer + buffer_index);
         switch (buffer[buffer_index]) {
         case '(':
         case ')':
-            push_variable_token(buffer, token_array, buffer_index,
-                                begin_new_token, token_index);
-            token_index++;
+            token_index +=
+                push_variable_token(buffer, token_array, buffer_index,
+                                    begin_new_token, token_index);
 
             // check for parenthesis and log right token
-            if (buffer[buffer_index] == ')') {
+            if (buffer[buffer_index] == '(') {
                 token_array[token_index++] = (token){LPAR, NULL};
+                print_debug("found token: [LPAR]");
+            } else if (buffer[buffer_index] == ')') {
+                token_array[token_index++] = (token){RPAR, NULL};
                 print_debug("found token: [RPAR]");
             } else {
-                token_array[token_index++] = (token){RPAR, NULL};
-                print_debug("found token: [LPAR]");
+                print_error(
+                    "lexing error, parenthesis expected but doesnt match");
+                exit(1);
             }
             // update the begin token, all tokens including the bufferindex
             // are
@@ -95,6 +121,8 @@ token *lexerer(char *buffer) {
             token_index++;
             begin_new_token = buffer_index + 1;
             break;
+        default:
+            token_index;
         }
         // update loop
         buffer_index += 1;

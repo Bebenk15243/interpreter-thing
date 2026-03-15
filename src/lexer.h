@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum tokens_ids { LPAR, RPAR, VAR, NUMBER, EOF_ };
+enum tokens_ids { LPAR, RPAR, VAR, NUMBER, LAMBDA, DEFINE, IF, EOF_ };
 
 typedef struct {
     int token_id;
