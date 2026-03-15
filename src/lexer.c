@@ -36,7 +36,7 @@ void push_variable_token(char *buffer, token *token_array, int buffer_index,
             char *value =
                 (char *)calloc(buffer_index - begin_new_token, sizeof(char));
             if (value == NULL) {
-                printf("error, no memory\n");
+                print_error("error, no memory");
                 exit(1);
             }
             // copy the value from the buffer into the tokenarray
@@ -46,7 +46,8 @@ void push_variable_token(char *buffer, token *token_array, int buffer_index,
 
             token_array[token_index] = (token){VAR, value};
             // debug statement
-            printf("found value: [%s]\n", value);
+            print_debug(value);
+            print_debug("found value: ");
         }
     }
 }
@@ -55,7 +56,7 @@ token *lexerer(char *buffer) {
     // allocation token list to give later back to parser
     token *token_array = (token *)calloc(MAX_AMOUNT_TOKENS, sizeof(token));
     if (token_array == NULL) {
-        printf("error, no memory");
+        print_error("error, no memory");
         exit(1);
     }
 
@@ -77,10 +78,10 @@ token *lexerer(char *buffer) {
             // check for parenthesis and log right token
             if (buffer[buffer_index] == ')') {
                 token_array[token_index++] = (token){LPAR, NULL};
-                printf("found token: [RPAR]\n");
+                print_debug("found token: [RPAR]");
             } else {
                 token_array[token_index++] = (token){RPAR, NULL};
-                printf("found token: [LPAR]\n");
+                print_debug("found token: [LPAR]");
             }
             // update the begin token, all tokens including the bufferindex
             // are

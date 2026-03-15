@@ -1,8 +1,10 @@
 #ifndef LEXER_H_
 #define LEXER_H_
-
+#include "debug.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 enum tokens_ids { LPAR, RPAR, VAR, NUMBER, EOF_ };
 

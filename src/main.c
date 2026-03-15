@@ -1,7 +1,5 @@
+#include "debug.h"
 #include "lexer.h"
-#include <stdio.h>
-#include <string.h>
-
 #define BUFFERSIZE 2047
 
 void args_handle(const int argc, const char **argv, char **file_name) {
@@ -14,17 +12,20 @@ void args_handle(const int argc, const char **argv, char **file_name) {
             case 'f':
             case 'F':
                 *file_name = argv[i + 1];
-                printf("%s\n", *file_name);
+                print_debug("got file name: ");
+                print_debug(*file_name);
                 break;
-
+            case 'd':
+                set_flag(1, 1, 1);
             default:
-                printf("I DONT KNOW %s", argv[i]);
+                print_debug("no flag givenn");
             }
         }
     }
 }
 
 int main(const int argc, const char **argv) {
+    set_flag(1, 1, 1);
     char *file_name = NULL; // NUlL to detect when -f flag is found
     args_handle(argc, argv, &file_name);
 
@@ -33,7 +34,8 @@ int main(const int argc, const char **argv) {
     if (file_name != NULL) {
         FILE *file = fopen(file_name, "r");
         if (file == NULL) {
-            printf("error while opening %s\n", file_name);
+            print_error("error while opening file: ");
+            print_error(file_name);
             exit(1);
         }
 
