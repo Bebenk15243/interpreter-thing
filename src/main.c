@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "lexer.h"
+#include "parser.h"
 #define BUFFERSIZE 2047
 
 void args_handle(const int argc, const char **argv, char **file_name) {
@@ -25,7 +26,7 @@ void args_handle(const int argc, const char **argv, char **file_name) {
 }
 
 int main(const int argc, const char **argv) {
-    set_flag(1, 1, 1);
+    set_flag(0, 1, 1);
     char *file_name = NULL; // NUlL to detect when -f flag is found
     args_handle(argc, argv, &file_name);
 
@@ -53,7 +54,10 @@ int main(const int argc, const char **argv) {
         fclose(file);
 
         token *token_array = lexerer(input_buffer);
-        print_tokens(token_array);
+        // print_tokens(token_array);
+        set_flag(1, 1, 1);
+        int i = 0;
+        parse(&i, token_array);
         free_token_array(token_array);
         return 0;
 
@@ -70,6 +74,10 @@ int main(const int argc, const char **argv) {
             }
             token *token_array = lexerer(input_buffer);
             print_tokens(token_array);
+            set_flag(1, 1, 1);
+            int i = 0;
+            parse(&i, token_array);
+
             free_token_array(token_array);
         }
         fputs("exiting...\n", stdout);
