@@ -17,7 +17,7 @@ typedef struct {
 } var_exp;
 
 typedef struct {
-    expr_t *cond;
+    expr_t *condition;
     expr_t *consequent;
     expr_t *alternative;
 } if_exp;
