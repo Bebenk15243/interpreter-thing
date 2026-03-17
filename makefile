@@ -1,4 +1,4 @@
-main: .build/main.o .build/lexer.o .build/debug.o .build/parser.o
+main: .build/main.o .build/lexer.o .build/parser.o
 	gcc $^ -o $@
 
 # create main.o, we need main.c
@@ -15,6 +15,4 @@ main: .build/main.o .build/lexer.o .build/debug.o .build/parser.o
 .build/parser.o: src/parser.c
 	gcc -c src/parser.c -o $@
 
-.build/debug.o: src/debug.c
-	gcc -c src/debug.c -o $@
 
