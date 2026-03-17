@@ -33,7 +33,7 @@ int determine_token_special_token(char *value) {
         return DEFINE;
     else if (!strcmp(value, "if"))
         return IF;
-    else if (value[0] < '9')
+    else if (value[0] < '9' && value[0] > '0')
         return NUMBER;
     else
         return VAR;

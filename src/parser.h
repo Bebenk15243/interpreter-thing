@@ -17,29 +17,28 @@ typedef struct {
 } var_exp;
 
 typedef struct {
-    expr_t *condition;
-    expr_t *consequent;
-    expr_t *alternative;
+    expr_t condition;
+    expr_t consequent;
+    expr_t alternative;
 } if_exp;
 
 // (lambda (<pars>) <expr>)
 typedef struct {
     int parameter_count;
     var_exp *parameters;
-    expr_t *expression;
+    expr_t expression;
 } lambda_exp;
 
 typedef struct {
     var_exp name;
-    lambda_exp *lambda;
+    lambda_exp lambda;
     int type;
 } define_exp;
 
 typedef struct {
-    var_exp exp;
+    expr_t procedure;
     int arg_count;
     expr_t *args;
-    int type;
 } application_exp;
 
 expr_t *parse(int *index, token *tokenarray);
