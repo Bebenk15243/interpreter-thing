@@ -116,9 +116,10 @@ token *lexerer(char *buffer) {
             break;
 
         case ' ':
-            push_variable_token(buffer, token_array, buffer_index,
-                                begin_new_token, token_index);
-            token_index++;
+            token_index +=
+                push_variable_token(buffer, token_array, buffer_index,
+                                    begin_new_token, token_index);
+
             begin_new_token = buffer_index + 1;
             break;
         default:
