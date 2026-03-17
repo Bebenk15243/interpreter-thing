@@ -1,9 +1,12 @@
 #include "lexer.h"
+#include "debug.h"
 #include <ctype.h>
 #include <string.h>
 
 #define MAX_AMOUNT_TOKENS 2048
 #define MAX_VARIABLE_LENGTH 16
+#define DEBUG_FLAG 0
+#define WARN_FLAG 1
 
 // this function checks wether the string between begin and end index could be a
 // variable doestn check end_index
@@ -49,7 +52,7 @@ int push_variable_token(char *buffer, token *token_array, int buffer_index,
             char *value =
                 (char *)calloc(buffer_index - begin_new_token, sizeof(char));
             if (value == NULL) {
-                print_error("error, no memory");
+                PRINT_ERROR("error, no memory");
                 exit(1);
             }
             // copy the value from the buffer into the tokenarray
@@ -59,12 +62,11 @@ int push_variable_token(char *buffer, token *token_array, int buffer_index,
             token_array[token_index] =
                 (token){determine_token_special_token(value), value};
             // debug statement
-            print_debug("found value: ");
-            print_debug(value);
+            PRINT_DEBUG("found value: %s", value);
 
             return 1;
         } else {
-            print_warning("lexing: weird thing that shouldnt be reachable");
+            PRINT_WARN("lexing: weird thing that shouldnt be reachable");
             return 0;
         }
     } else {
@@ -76,7 +78,7 @@ token *lexerer(char *buffer) {
     // allocation token list to give later back to parser
     token *token_array = (token *)calloc(MAX_AMOUNT_TOKENS, sizeof(token));
     if (token_array == NULL) {
-        print_error("error, no memory");
+        PRINT_ERROR("error, no memory");
         exit(1);
     }
 
@@ -88,8 +90,6 @@ token *lexerer(char *buffer) {
 
     // maybe implement a propper dfa
     while (buffer[buffer_index] != '\0') {
-
-        print_debug(buffer + buffer_index);
         switch (buffer[buffer_index]) {
         case '(':
         case ')':
@@ -100,12 +100,12 @@ token *lexerer(char *buffer) {
             // check for parenthesis and log right token
             if (buffer[buffer_index] == '(') {
                 token_array[token_index++] = (token){LPAR, NULL};
-                print_debug("found token: [LPAR]");
+                PRINT_DEBUG("found token: [LPAR]");
             } else if (buffer[buffer_index] == ')') {
                 token_array[token_index++] = (token){RPAR, NULL};
-                print_debug("found token: [RPAR]");
+                PRINT_DEBUG("found token: [RPAR]");
             } else {
-                print_error(
+                PRINT_ERROR(
                     "lexing error, parenthesis expected but doesnt match");
                 exit(1);
             }

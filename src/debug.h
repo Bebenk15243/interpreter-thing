@@ -1,17 +1,46 @@
+//*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;
+//*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;
+//*;*;                                                        *;*;
+//*;*;              ... for easier debugging ...              *;*;
+//*;*;                     Pepijn Simoens                     *;*;
+//*;*;                       March 2026                       *;*;
+//*;*;                        debug.h                         *;*;
+//*;*;                                                        *;*;
+//*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;
+//*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;*;
+
 #ifndef DEBUG_H_
 #define DEBUG_H_
 #include <stdio.h>
 
-typedef struct {
-    short debug : 1;
-    short warning : 1;
-    short error : 1;
-} flag_types;
+// this code expects DEBUG_FLAG and WARN_FLAG defined (either 1 or 0)
+// are defined for obvious reasons
 
-void print_debug(char *str);
-void print_warning(char *str);
-void print_error(char *str);
+// turns the text bold and prepends [debug]
+#define PRINT_DEBUG(args...)                                                   \
+    while (DEBUG_FLAG) {                                                       \
+        printf("\e[1m[DEBUG]: ");                                              \
+        printf(args);                                                          \
+        printf("\e[0m\n");                                                     \
+        break;                                                                 \
+    }
 
-void set_flag(char debug, char warning, char error);
+// bold yellow and prepends [WARN]
+#define PRINT_WARN(args...)                                                    \
+    while (WARN_FLAG) {                                                        \
+        printf("\e[1m\e[33m[WARN] : ");                                        \
+        printf(args);                                                          \
+        printf("\e[0m\n");                                                     \
+        break;                                                                 \
+    }
+
+// bold red and prepends [ERROR]
+// this has no flag because an error should always be visible
+#define PRINT_ERROR(args...)                                                   \
+    do {                                                                       \
+        fprintf(stderr, "\e[1m\e[31m[ERROR]: ");                               \
+        fprintf(stderr, args);                                                 \
+        fprintf(stderr, "\e[0m\n");                                            \
+    } while (0)
 
 #endif

@@ -3,6 +3,9 @@
 #include "parser.h"
 #define BUFFERSIZE 2047
 
+#define WARN_FLAG 1
+#define DEBUG_FLAG 1
+
 void args_handle(const int argc, const char **argv, char **file_name) {
     if (argc == 1) {
         return;
@@ -13,20 +16,16 @@ void args_handle(const int argc, const char **argv, char **file_name) {
             case 'f':
             case 'F':
                 *file_name = argv[i + 1];
-                print_debug("got file name: ");
-                print_debug(*file_name);
+                PRINT_DEBUG("got file name: %s", *file_name);
                 break;
-            case 'd':
-                set_flag(1, 1, 1);
             default:
-                print_debug("no flag givenn");
+                PRINT_DEBUG("no flag given");
             }
         }
     }
 }
 
 int main(const int argc, const char **argv) {
-    set_flag(0, 1, 1);
     char *file_name = NULL; // NUlL to detect when -f flag is found
     args_handle(argc, argv, &file_name);
 
@@ -35,8 +34,7 @@ int main(const int argc, const char **argv) {
     if (file_name != NULL) {
         FILE *file = fopen(file_name, "r");
         if (file == NULL) {
-            print_error("error while opening file: ");
-            print_error(file_name);
+            PRINT_ERROR("opening file %s failed", file_name);
             exit(1);
         }
 
@@ -55,7 +53,6 @@ int main(const int argc, const char **argv) {
 
         token *token_array = lexerer(input_buffer);
         // print_tokens(token_array);
-        set_flag(1, 1, 1);
         int i = 0;
         parse(&i, token_array);
         free_token_array(token_array);
@@ -74,7 +71,6 @@ int main(const int argc, const char **argv) {
             }
             token *token_array = lexerer(input_buffer);
             print_tokens(token_array);
-            set_flag(1, 1, 1);
             int i = 0;
             parse(&i, token_array);
 
