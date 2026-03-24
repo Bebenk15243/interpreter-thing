@@ -1,7 +1,4 @@
 #include "lexer.h"
-#include "debug.h"
-#include <ctype.h>
-#include <string.h>
 
 #define MAX_AMOUNT_TOKENS 2048
 #define MAX_VARIABLE_LENGTH 16

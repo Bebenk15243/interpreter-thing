@@ -1,12 +1,10 @@
 #include "parser.h"
-#include "debug.h"
 
 #define WARN_FLAG 1
 #define DEBUG_FLAG 1
 
 // TODO:
 // - free for all ast structures
-// - comments
 
 // checks if there is an RPAR token to close the expression.
 // also updates the index
