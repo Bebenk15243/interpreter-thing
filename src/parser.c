@@ -72,11 +72,18 @@ lambda_exp *parse_lamdba(int *index, token *tokenarray) {
     }
     // the expression part will be parsed recursive, not the best option but
     // certainly the easiest...
-    lambda->expression = *parse(index, tokenarray);
+    lambda->expression = parse(index, tokenarray);
 
     // lambda expressions end with `)`
     has_RPAR(index, tokenarray);
     return lambda;
+}
+
+void free_lambda(lambda_exp *lambda) {
+    PRINT_DEBUG("freeeing lambda expr");
+    free(lambda->parameters);
+    free_dispatch(lambda->expression);
+    free(lambda);
 }
 
 // if expressions: (if <condition> <consequent> <alternative>)
@@ -90,23 +97,22 @@ if_exp *parse_if(int *index, token *tokenarray) {
     // The opening Lpar and if does not have to be parsed, done by parse
     // function.
     // next is the condition, this can be an expression so we use parse recursif
-    expr_t *temp = parse(index, tokenarray);
-    if_->condition = *temp;
-    free(temp);
-
-    // same structure is used
-    // TODO: refactor these three expressions?
-    temp = parse(index, tokenarray);
-    if_->consequent = *temp;
-    free(temp);
-
-    temp = parse(index, tokenarray);
-    if_->alternative = *temp;
-    free(temp);
+    if_->condition = parse(index, tokenarray);
+    if_->consequent = parse(index, tokenarray);
+    if_->alternative = parse(index, tokenarray);
 
     // ending RPAR of the if expression
     has_RPAR(index, tokenarray);
     return if_;
+}
+
+void free_if(if_exp *if_) {
+    PRINT_DEBUG("free if expr");
+    // TODO: yaaaaa hyperrecursion
+    free_dispatch(if_->condition);
+    free_dispatch(if_->consequent);
+    free_dispatch(if_->alternative);
+    free(if_);
 }
 
 // aplications are expressions without the special tokens in the begin:
@@ -116,11 +122,7 @@ application_exp *parse_application(int *index, token *tokenarray) {
     // parsing the procedure part, which can be another application or lambda or
     // anything realy.
     //  ((<var>) 1) has to work
-    app->procedure = *parse(index, tokenarray);
-    PRINT_DEBUG("found a procedure?: %s",
-                ((var_exp *)app->procedure.expr)->name);
-
-    // NOTE: realloc allong the way by multiples of 2
+    app->procedure = parse(index, tokenarray);
 
     // Parameters can be expressions.
     // they are parsed using a loop.
@@ -138,6 +140,7 @@ application_exp *parse_application(int *index, token *tokenarray) {
         // if there is more memory necessary <- this word is too hard to write
         //  then reallocate space
         if (args_index == app->arg_count) {
+            // NOTE: realloc allong the way by multiples of 2
             app->args = (expr_t *)realloc(app->args, app->arg_count * 2);
             app->arg_count *= 2;
         }
@@ -147,11 +150,20 @@ application_exp *parse_application(int *index, token *tokenarray) {
 
     // resize to just fit the amount of arguments
     app->args = (expr_t *)realloc(app->args, args_index);
+    PRINT_DEBUG("amount of args %d", args_index);
     app->arg_count = args_index;
 
     // applications also end with a RPAR
     has_RPAR(index, tokenarray);
     return app;
+}
+
+void free_application(application_exp *app) {
+    free_dispatch(app->procedure);
+    PRINT_DEBUG("freeing arguments");
+    if (app->arg_count)
+        free_dispatch(app->args);
+    free(app);
 }
 
 // the big boi, should parse anything
@@ -188,6 +200,7 @@ expr_t *parse(int *index, token *tokenarray) {
             break;
         } else if (tokenarray[*index].token_id == LPAR) {
             // expression in expression, never know what it is ...
+            PRINT_DEBUG("nested shit");
             exp->type = APP;
             exp->expr = parse(index, tokenarray);
             break;
@@ -205,10 +218,47 @@ expr_t *parse(int *index, token *tokenarray) {
     case VAR:
         exp->type = VAR;
         exp->expr = malloc(sizeof(var_exp));
-        ((var_exp *)exp->expr)->name = (char *)tokenarray[*index].value;
+        ((var_exp *)exp->expr)->name =
+            calloc(strlen(tokenarray[*index].value), sizeof(char));
+
+        memcpy(((var_exp *)exp->expr)->name, tokenarray[*index].value,
+               strlen(tokenarray[*index].value));
+
         PRINT_DEBUG("found a variable: %s", ((var_exp *)exp->expr)->name);
         (*index)++;
         break;
     }
     return exp;
+}
+
+void free_dispatch(expr_t *expr) {
+    switch (expr->type) {
+    case LAMBDA:
+        free_lambda(expr->expr);
+        free(expr);
+        break;
+    case NUMBER:
+        free(expr->expr);
+        free(expr);
+        break;
+    case APP:
+        free_application(expr->expr);
+        free(expr);
+        break;
+    case IF:
+        free_if(expr->expr);
+        free(expr);
+        break;
+    case VAR:
+        PRINT_DEBUG("freeing a variable");
+        PRINT_DEBUG("variable: %s", ((var_exp *)expr->expr)->name);
+        free((char *)((var_exp *)expr->expr)->name);
+        PRINT_DEBUG("freeing exp");
+        free(expr->expr);
+        free(expr);
+        break;
+    default:
+        PRINT_WARN("not recognised token %d", expr->type);
+        break;
+    }
 }
