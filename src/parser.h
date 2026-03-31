@@ -41,7 +41,7 @@ typedef struct {
 typedef struct {
     expr_t *procedure;
     int arg_count;
-    expr_t *args;
+    expr_t **args;
 } application_exp;
 
 expr_t *parse(int *index, token *tokenarray);

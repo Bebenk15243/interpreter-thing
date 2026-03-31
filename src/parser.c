@@ -134,7 +134,8 @@ application_exp *parse_application(int *index, token *tokenarray) {
     int args_index = 0;
     // initial allocation (in this case 4)
     app->arg_count = 4; // TODO: make an macro definition for this
-    app->args = (expr_t *)calloc(app->arg_count, sizeof(expr_t));
+    app->args = (expr_t **)calloc(app->arg_count, sizeof(expr_t *));
+
     // start counting
     while (tokenarray[*index].token_id != RPAR) {
         // if there is more memory necessary <- this word is too hard to write
@@ -143,15 +144,16 @@ application_exp *parse_application(int *index, token *tokenarray) {
             PRINT_DEBUG("[parse_application]: lengthen the arguments array");
             // NOTE: realloc allong the way by multiples of 2
             app->arg_count *= 2;
-            app->args =
-                (expr_t *)realloc(app->args, sizeof(expr_t) * app->arg_count);
+            app->args = (expr_t **)realloc(app->args,
+                                           sizeof(expr_t *) * app->arg_count);
         }
-        app->args[args_index] = *parse(index, tokenarray);
+
+        app->args[args_index] = parse(index, tokenarray);
         args_index++;
     }
 
     // resize to just fit the amount of arguments
-    app->args = (expr_t *)realloc(app->args, args_index * sizeof(expr_t));
+    app->args = (expr_t **)realloc(app->args, args_index * sizeof(expr_t *));
     PRINT_DEBUG("amount of args %d", args_index);
     app->arg_count = args_index;
 
@@ -166,8 +168,9 @@ void free_application(application_exp *app) {
     if (app->arg_count > 0) {
         PRINT_DEBUG("[free application]: freeing the arguments");
         for (int i = 0; i < app->arg_count; i++) {
-            free_dispatch(app->args + i);
+            free_dispatch(app->args[i]);
         }
+        free(app->args);
     }
     free(app);
 }
