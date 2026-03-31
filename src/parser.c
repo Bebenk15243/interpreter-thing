@@ -203,17 +203,13 @@ expr_t *parse(int *index, token *tokenarray) {
             exp->type = IF;
             exp->expr = parse_if(index, tokenarray);
             break;
-        } else if (tokenarray[*index].token_id == VAR) {
+        } else if (tokenarray[*index].token_id == VAR ||
+                   tokenarray[*index].token_id == LPAR) {
             exp->type = APP;
             exp->expr = parse_application(index, tokenarray);
             break;
-        } else if (tokenarray[*index].token_id == LPAR) {
-            // expression in expression, never know what it is ...
-            PRINT_DEBUG("nested shit");
-            exp->type = APP;
-            exp->expr = parse(index, tokenarray);
-            break;
         }
+
     case RPAR:
         PRINT_ERROR("expected an expression");
         exit(1);

@@ -1,7 +1,7 @@
 #include "debug.h"
 #include "lexer.h"
 #include "parser.h"
-#define BUFFERSIZE 2047
+#define BUFFERSIZE 65536
 
 #define WARN_FLAG 1
 #define DEBUG_FLAG 1
@@ -54,8 +54,9 @@ int main(const int argc, const char **argv) {
         token *token_array = lexerer(input_buffer);
         // print_tokens(token_array);
         int i = 0;
-        parse(&i, token_array);
+        expr_t *exp = parse(&i, token_array);
         free_token_array(token_array);
+        free_dispatch(exp);
         return 0;
 
     } else {
@@ -70,11 +71,11 @@ int main(const int argc, const char **argv) {
                 continue;
             }
             token *token_array = lexerer(input_buffer);
-            print_tokens(token_array);
             int i = 0;
-            parse(&i, token_array);
-
+            expr_t *exp = parse(&i, token_array);
             free_token_array(token_array);
+
+            free_dispatch(exp);
         }
         fputs("exiting...\n", stdout);
         return 0;
