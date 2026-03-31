@@ -140,16 +140,18 @@ application_exp *parse_application(int *index, token *tokenarray) {
         // if there is more memory necessary <- this word is too hard to write
         //  then reallocate space
         if (args_index == app->arg_count) {
+            PRINT_DEBUG("[parse_application]: lengthen the arguments array");
             // NOTE: realloc allong the way by multiples of 2
-            app->args = (expr_t *)realloc(app->args, app->arg_count * 2);
             app->arg_count *= 2;
+            app->args =
+                (expr_t *)realloc(app->args, sizeof(expr_t) * app->arg_count);
         }
         app->args[args_index] = *parse(index, tokenarray);
         args_index++;
     }
 
     // resize to just fit the amount of arguments
-    app->args = (expr_t *)realloc(app->args, args_index);
+    app->args = (expr_t *)realloc(app->args, args_index * sizeof(expr_t));
     PRINT_DEBUG("amount of args %d", args_index);
     app->arg_count = args_index;
 
@@ -161,8 +163,12 @@ application_exp *parse_application(int *index, token *tokenarray) {
 void free_application(application_exp *app) {
     free_dispatch(app->procedure);
     PRINT_DEBUG("freeing arguments");
-    if (app->arg_count)
-        free_dispatch(app->args);
+    if (app->arg_count > 0) {
+        PRINT_DEBUG("[free application]: freeing the arguments");
+        for (int i = 0; i < app->arg_count; i++) {
+            free_dispatch(app->args + i);
+        }
+    }
     free(app);
 }
 
@@ -238,10 +244,13 @@ void free_dispatch(expr_t *expr) {
         free(expr);
         break;
     case NUMBER:
+        PRINT_DEBUG("[free dispatch]: freeing the number %d",
+                    ((num_exp *)expr->expr)->num);
         free(expr->expr);
         free(expr);
         break;
     case APP:
+        PRINT_DEBUG("free an application");
         free_application(expr->expr);
         free(expr);
         break;
@@ -251,9 +260,9 @@ void free_dispatch(expr_t *expr) {
         break;
     case VAR:
         PRINT_DEBUG("freeing a variable");
-        PRINT_DEBUG("variable: %s", ((var_exp *)expr->expr)->name);
+        PRINT_DEBUG("[VAR] variable: %s", ((var_exp *)expr->expr)->name);
         free((char *)((var_exp *)expr->expr)->name);
-        PRINT_DEBUG("freeing exp");
+        PRINT_DEBUG("[VAR] freeing exp");
         free(expr->expr);
         free(expr);
         break;
