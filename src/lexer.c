@@ -51,7 +51,7 @@ int push_variable_token(char *buffer, token *token_array, int buffer_index,
             char *value =
                 (char *)calloc(buffer_index - begin_new_token, sizeof(char));
             if (value == NULL) {
-                PRINT_ERROR("error, no memory");
+                PRINT_ERROR("[lexer] error, no memory");
                 exit(1);
             }
             // copy the value from the buffer into the tokenarray
@@ -61,11 +61,11 @@ int push_variable_token(char *buffer, token *token_array, int buffer_index,
             token_array[token_index] =
                 (token){determine_token_special_token(value), value};
             // debug statement
-            PRINT_DEBUG("found value: %s", value);
+            PRINT_DEBUG("[lexer] found value: %s", value);
 
             return 1;
         } else {
-            PRINT_WARN("lexing: weird thing that shouldnt be reachable");
+            PRINT_WARN("[lexer] weird thing that shouldnt be reachable");
             return 0;
         }
     } else {
@@ -77,7 +77,7 @@ token *lexerer(char *buffer) {
     // allocation token list to give later back to parser
     token *token_array = (token *)calloc(MAX_AMOUNT_TOKENS, sizeof(token));
     if (token_array == NULL) {
-        PRINT_ERROR("error, no memory");
+        PRINT_ERROR("[lexer] error, no memory");
         exit(1);
     }
 
@@ -99,13 +99,12 @@ token *lexerer(char *buffer) {
             // check for parenthesis and log right token
             if (buffer[buffer_index] == '(') {
                 token_array[token_index++] = (token){LPAR, NULL};
-                PRINT_DEBUG("found token: [LPAR]");
+                PRINT_DEBUG("[lexer] found token: [LPAR]");
             } else if (buffer[buffer_index] == ')') {
                 token_array[token_index++] = (token){RPAR, NULL};
-                PRINT_DEBUG("found token: [RPAR]");
+                PRINT_DEBUG("[lexer] found token: [RPAR]");
             } else {
-                PRINT_ERROR(
-                    "lexing error, parenthesis expected but doesnt match");
+                PRINT_ERROR("[lexer] error, parenthesis expected but doesnt match");
                 exit(1);
             }
             // update the begin token, all tokens including the bufferindex

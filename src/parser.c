@@ -10,7 +10,7 @@
 // also updates the index
 void has_RPAR(int *index, token *tokenarray) {
     if (tokenarray[*index].token_id != RPAR) {
-        PRINT_ERROR("expected a RPAR");
+        PRINT_ERROR("[parser] expected a RPAR");
         exit(1);
     }
     (*index)++;
@@ -26,13 +26,13 @@ lambda_exp *parse_lamdba(int *index, token *tokenarray) {
     // checks if correct syntax is used: an opening parenthesis for the
     // parameter(s)
     if (tokenarray[(*index)++].token_id != LPAR) {
-        PRINT_ERROR("parser: lambda where left parenthesis for parameter");
+        PRINT_ERROR("[parser] lambda where left parenthesis for parameter");
         exit(1);
     }
 
     // see if there are parameters?
     if (tokenarray[(*index)].token_id == RPAR) {
-        PRINT_DEBUG("ITS A THUNNNKKK");
+        PRINT_DEBUG("[parser] ITS A THUNNNKKK");
         lambda->parameters = NULL;
         // I think I wrote this because it also updates the index but not sure
         // TODO: check why this is here
@@ -44,28 +44,28 @@ lambda_exp *parse_lamdba(int *index, token *tokenarray) {
         // (arg1 arg2 arg3 ...)
         //
         //  first counting the parameters
-        PRINT_DEBUG("checking parameters");
+        PRINT_DEBUG("[parser] checking parameters");
         int length = 0;
         for (int param_index = *index; tokenarray[param_index].token_id != RPAR;
              param_index++) {
             if (tokenarray[param_index].token_id != VAR) {
-                PRINT_ERROR("parser: cant parse a non-variable");
+                PRINT_ERROR("[parser] cant parse a non-variable");
                 exit(1);
             }
             length++;
         }
         // allocating space for the parameters and copy in to the array
         lambda->parameters = (var_exp *)calloc(length, sizeof(var_exp));
-        PRINT_DEBUG("found %d parameters: ", length);
+        PRINT_DEBUG("[parser] found %d parameters: ", length);
         for (int param_index = 0; param_index < length; param_index++) {
             lambda->parameters[param_index].name =
                 tokenarray[param_index + *index].value;
-            PRINT_DEBUG("parameter %d: %s", param_index + 1,
+            PRINT_DEBUG("[parser] parameter %d: %s", param_index + 1,
                         lambda->parameters[param_index].name);
         }
         // update the index
         *index += length;
-        PRINT_DEBUG("parameters are checked and assigned");
+        PRINT_DEBUG("[parser] parameters are checked and assigned");
 
         // end of the parameter list is an `)`
         has_RPAR(index, tokenarray);
@@ -80,7 +80,7 @@ lambda_exp *parse_lamdba(int *index, token *tokenarray) {
 }
 
 void free_lambda(lambda_exp *lambda) {
-    PRINT_DEBUG("freeeing lambda expr");
+    PRINT_DEBUG("[parser] [free lambda]");
     free(lambda->parameters);
     free_dispatch(lambda->expression);
     free(lambda);
@@ -107,7 +107,7 @@ if_exp *parse_if(int *index, token *tokenarray) {
 }
 
 void free_if(if_exp *if_) {
-    PRINT_DEBUG("free if expr");
+    PRINT_DEBUG("[parser] [free if]");
     // TODO: yaaaaa hyperrecursion
     free_dispatch(if_->condition);
     free_dispatch(if_->consequent);
@@ -141,7 +141,7 @@ application_exp *parse_application(int *index, token *tokenarray) {
         // if there is more memory necessary <- this word is too hard to write
         //  then reallocate space
         if (args_index == app->arg_count) {
-            PRINT_DEBUG("[parse_application]: lengthen the arguments array");
+            PRINT_DEBUG("[parser] [parse_application]: lengthen the arguments array");
             // NOTE: realloc allong the way by multiples of 2
             app->arg_count *= 2;
             app->args = (expr_t **)realloc(app->args,
@@ -154,7 +154,7 @@ application_exp *parse_application(int *index, token *tokenarray) {
 
     // resize to just fit the amount of arguments
     app->args = (expr_t **)realloc(app->args, args_index * sizeof(expr_t *));
-    PRINT_DEBUG("amount of args %d", args_index);
+    PRINT_DEBUG("[parser] amount of args %d", args_index);
     app->arg_count = args_index;
 
     // applications also end with a RPAR
@@ -164,9 +164,8 @@ application_exp *parse_application(int *index, token *tokenarray) {
 
 void free_application(application_exp *app) {
     free_dispatch(app->procedure);
-    PRINT_DEBUG("freeing arguments");
     if (app->arg_count > 0) {
-        PRINT_DEBUG("[free application]: freeing the arguments");
+        PRINT_DEBUG("[parser] [free application]: freeing the arguments");
         for (int i = 0; i < app->arg_count; i++) {
             free_dispatch(app->args[i]);
         }
@@ -185,21 +184,21 @@ expr_t *parse(int *index, token *tokenarray) {
     case LPAR:
         // TODO: this case can be refactored so only a single swich statement is
         // used...
-        PRINT_DEBUG("LPAR parsed");
+        PRINT_DEBUG("[parser] LPAR parsed");
         *index += 1;
         if (tokenarray[*index].token_id == LAMBDA) {
-            PRINT_DEBUG("found lambda");
+            PRINT_DEBUG("[parser] found lambda");
             exp->type = LAMBDA;
             exp->expr = parse_lamdba(index, tokenarray);
             break;
         } else if (tokenarray[*index].token_id == DEFINE) {
-            PRINT_DEBUG("found define");
+            PRINT_DEBUG("[parser] found define");
             // TODO: implement the define
             // NOTE: as a functional bro I dont think we need this, prove me
             // wrong... go nuts
             break;
         } else if (tokenarray[*index].token_id == IF) {
-            PRINT_DEBUG("found if");
+            PRINT_DEBUG("[parser] found if");
             exp->type = IF;
             exp->expr = parse_if(index, tokenarray);
             break;
@@ -211,13 +210,13 @@ expr_t *parse(int *index, token *tokenarray) {
         }
 
     case RPAR:
-        PRINT_ERROR("expected an expression");
+        PRINT_ERROR("[parser] expected an expression");
         exit(1);
     case NUMBER:
         exp->type = NUMBER;
         exp->expr = malloc(sizeof(num_exp));
         ((num_exp *)exp->expr)->num = atoi((char *)tokenarray[*index].value);
-        PRINT_DEBUG("found a number %d", ((num_exp *)exp->expr)->num);
+        PRINT_DEBUG("[parser] found a number %d", ((num_exp *)exp->expr)->num);
         (*index)++;
         break;
     case VAR:
@@ -229,7 +228,7 @@ expr_t *parse(int *index, token *tokenarray) {
         memcpy(((var_exp *)exp->expr)->name, tokenarray[*index].value,
                strlen(tokenarray[*index].value));
 
-        PRINT_DEBUG("found a variable: %s", ((var_exp *)exp->expr)->name);
+        PRINT_DEBUG("[parser] parser found a variable: %s", ((var_exp *)exp->expr)->name);
         (*index)++;
         break;
     }
@@ -243,13 +242,13 @@ void free_dispatch(expr_t *expr) {
         free(expr);
         break;
     case NUMBER:
-        PRINT_DEBUG("[free dispatch]: freeing the number %d",
+        PRINT_DEBUG("[parser] [free dispatch]: freeing the number %d",
                     ((num_exp *)expr->expr)->num);
         free(expr->expr);
         free(expr);
         break;
     case APP:
-        PRINT_DEBUG("free an application");
+        PRINT_DEBUG("[parser] free an application");
         free_application(expr->expr);
         free(expr);
         break;
@@ -258,15 +257,13 @@ void free_dispatch(expr_t *expr) {
         free(expr);
         break;
     case VAR:
-        PRINT_DEBUG("freeing a variable");
-        PRINT_DEBUG("[VAR] variable: %s", ((var_exp *)expr->expr)->name);
+        PRINT_DEBUG("[parser] [VAR] variable: %s", ((var_exp *)expr->expr)->name);
         free((char *)((var_exp *)expr->expr)->name);
-        PRINT_DEBUG("[VAR] freeing exp");
         free(expr->expr);
         free(expr);
         break;
     default:
-        PRINT_WARN("not recognised token %d", expr->type);
+        PRINT_WARN("[parser] not recognised token %d", expr->type);
         break;
     }
 }
